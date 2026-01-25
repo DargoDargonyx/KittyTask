@@ -15,7 +15,7 @@ There is no current documentation for the application.
 ## TODO List
 
 - [x] Develop the basis for the switching tabs
-- [ ] Implement a group add/remove feature
+- [x] Implement a group add/remove feature
 - [ ] Implement a task add/remove feature
 - [ ] Implement a colorscheme feature
 - [ ] Implement a local save feature

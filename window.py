@@ -1,3 +1,4 @@
+from functools import partial
 import tkinter as tk
 import customtkinter as ctk
 
@@ -12,6 +13,7 @@ DARK_GRAY = "#2b2b2b"   # HEX color dark gray
 GRAY = "#5c5c5c"        # HEX color gray
 LIGHT_GRAY = "#949494"  # HEX color light gray
 WHITE = "#FFFFFF"       # HEX color white
+CYAN = "#00f7ff"        # HEX color cyan
 
 
 class Window:
@@ -78,6 +80,8 @@ class Window:
             "settings": False,
             "group": False
         }
+        self.groups = []
+        self.active_group_buttons = 0
         self.create_menu_bar()
         self.create_home_page()
 
@@ -114,7 +118,7 @@ class Window:
         menu_bar_frame.rowconfigure(0, weight = 1)
         menu_bar_frame.pack(fill = "both")
         home_button = tk.Button(
-            menu_bar_frame, 
+            menu_bar_frame,
             text = "Home",
             command = self.switch_to_home,
             bg = DARK_GRAY,
@@ -242,12 +246,12 @@ class Window:
             width = w_width
         )
         group_button_bar.columnconfigure(0, weight = 1)
-        group_button_bar.columnconfigure(1, weight = 10)
         group_button_bar.rowconfigure(0, weight = 1)
         group_button_bar.pack(side = "top", fill = "both", padx = (2, 2), pady = (0, 2))
         add_group_button = tk.Button(
             group_button_bar,
             text = "Add Group",
+            command = self.new_group,
             bg = DARK_GRAY,
             fg = WHITE,
             activebackground = GRAY,
@@ -255,15 +259,13 @@ class Window:
             cursor = "hand2"
         )
         add_group_button.grid(row = 0, column = 0, sticky = tk.NSEW)
-        spacer_frame = tk.Frame(group_button_bar, bg = LIGHT_GRAY)
-        spacer_frame.grid(row = 0, column = 1, sticky = tk.NSEW)
 
         # Main body of the page
         body_frame = tk.Frame(self.main_frame)
         body_frame.pack(side = "bottom", fill = "both", expand = True)
         task_canvas = tk.Canvas(body_frame, bg = LIGHT_GRAY)
         task_canvas.pack(side = "left", fill = "both", expand = True)
-        self.scrollable_task_frame = tk.Frame(task_canvas)
+        self.scrollable_task_frame = tk.Frame(task_canvas, bg = LIGHT_GRAY)
         self.scrollable_task_frame.pack(fill = "both", expand = True)
         scroll_bar_frame = tk.Frame(body_frame)
         scroll_bar_frame.pack(side = "right", fill = "y")
@@ -273,13 +275,19 @@ class Window:
             command = task_canvas.yview
         )
         scroll_bar.pack(fill = "both", expand = True)
-        task_canvas.create_window(
-            (0, 0), 
-            window = self.scrollable_task_frame, 
+        canvas_window = task_canvas.create_window(
+            (0, 0),
+            window = self.scrollable_task_frame,
             anchor = "nw"
         )
+        task_canvas.bind(
+            "<Configure>",
+            lambda e: task_canvas.itemconfig(
+                canvas_window,
+                width = e.width
+            )
+        )
         task_canvas.configure(yscrollcommand = scroll_bar.set)
-        task_canvas.pack()
         self.scrollable_task_frame.bind(
             "<Configure>",
             lambda e: task_canvas.configure(
@@ -287,12 +295,8 @@ class Window:
             )
         )
 
-        # Testing label
-        test_label = tk.Label(
-            self.scrollable_task_frame, 
-            text = "This feature has yet to be implemented"
-        )
-        test_label.pack()
+        for grp in self.groups:
+            self.add_group(grp)
 
 
     def switch_to_task(self):
@@ -309,7 +313,65 @@ class Window:
             self.create_task_page()
 
 
-    def create_group_page(self):
+    def new_group(self):
+        """
+        This method handles the logic for creating a
+        new group.
+        """
+
+        num = len(self.groups)
+        grp = Group(f"Group #{num + 1}")
+        self.groups.append(grp)
+        self.add_group(grp)
+
+
+    def delete_group(self, grp):
+        """
+        This method handles the logic for deleting a
+        given group.
+        """
+
+        self.groups.remove(grp)
+        self.switch_to_task()
+
+    def add_group(self, grp):
+        """
+        This method handles the logic for adding a new group
+        display in the task menu.
+        """
+
+        index = self.active_group_buttons
+        row = index // 3
+        col = index % 3
+        w_height = self.scrollable_task_frame.winfo_screenheight()
+        w_width = self.scrollable_task_frame.winfo_screenwidth()
+        self.scrollable_task_frame.columnconfigure(col, weight = 1)
+        self.scrollable_task_frame.rowconfigure(row, weight = 1)
+        self.active_group_buttons += 1
+
+        button = ctk.CTkButton(
+            self.scrollable_task_frame,
+            text = grp.getName(),
+            height = w_height // 4,
+            width = w_width // 4,
+            corner_radius = 8,
+            border_width = 3,
+            cursor = "hand2",
+            border_color = BLACK,
+            fg_color = CYAN,
+            text_color = BLACK,
+            command = partial(self.switch_to_group, grp)
+        )
+        button.grid(
+            row = row, 
+            column = col, 
+            sticky = tk.NSEW,
+            padx = 5, 
+            pady = 5
+        )
+
+
+    def create_group_page(self, grp):
         """
         This method handles the logic for creating the
         group page display for the GUI application.
@@ -321,7 +383,7 @@ class Window:
             self.clear_active_frames()
             self.active_frames["group"] = True
 
-        self.main_frame = tk.Frame
+        self.main_frame = tk.Frame(self.root)
         self.main_frame.pack(fill = "both", expand = True)
         w_height = self.root.winfo_screenheight()
         w_width = self.root.winfo_screenwidth()
@@ -335,10 +397,10 @@ class Window:
             width = w_width
         )
         task_button_bar.columnconfigure(0, weight = 1)
-        task_button_bar.columnconfigure(1, weight = 10)
+        task_button_bar.columnconfigure(1, weight = 1)
         task_button_bar.rowconfigure(0, weight = 1)
         task_button_bar.pack(side = "top", fill = "both", padx = (2, 2), pady = (0, 2))
-        add_group_button = tk.Button(
+        add_task_button = tk.Button(
             task_button_bar,
             text = "Add Task",
             bg = DARK_GRAY,
@@ -347,18 +409,27 @@ class Window:
             activeforeground = WHITE,
             cursor = "hand2"
         )
-        add_group_button.grid(row = 0, column = 0, sticky = tk.NSEW)
-        spacer_frame = tk.Frame(task_button_bar, bg = LIGHT_GRAY)
-        spacer_frame.grid(row = 0, column = 1, sticky = tk.NSEW)
+        add_task_button.grid(row = 0, column = 0, sticky = tk.NSEW)
+        delete_group_button = tk.Button(
+            task_button_bar,
+            text = "Delete Group",
+            bg = DARK_GRAY,
+            fg = WHITE,
+            activebackground = GRAY,
+            activeforeground = WHITE,
+            cursor = "hand2",
+            command = partial(self.delete_group, grp)
+        )
+        delete_group_button.grid(row = 0, column = 1, sticky = tk.NSEW)
 
         # The main body for the page
         body_frame = tk.Frame(self.main_frame)
         body_frame.pack(side = "bottom", fill = "both", expand = True)
-        test_label = tk.Label(body_frame, text = "testing")
+        test_label = tk.Label(body_frame, text = grp.getName())
         test_label.pack()
 
 
-    def switch_to_group(self):
+    def switch_to_group(self, grp):
         """
         This method is for the use of displaying the
         "add task" button for the GUI application when
@@ -369,7 +440,8 @@ class Window:
             return
         else:
             self.main_frame.destroy()
-            self.create_group_page()
+            self.create_group_page(grp)
+            self.active_group_buttons = 0
 
 
     def create_settings_page(self):
@@ -409,7 +481,7 @@ class Window:
         else:
             self.main_frame.destroy()
             self.create_settings_page()
-
+            self.active_group_buttons = 0
 
     def start(self):
         """

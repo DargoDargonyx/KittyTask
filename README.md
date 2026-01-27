@@ -1,7 +1,8 @@
-# KittyTask
+# KittyTask-Prototype
 
-A task management application being developed with the goal of replacing the  
-spreadsheet that I currently use.
+A task management application prototype being developed with the goal of replacing the  
+spreadsheet that I currently use. For this prototype I'm using python with the tkinter  
+library package.
 
 ## Tools Used
 

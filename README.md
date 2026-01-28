@@ -1,7 +1,8 @@
-# KittyTask
+# KittyTask-Prototype
 
-A task management application being developed with the goal of replacing the  
-spreadsheet that I currently use.
+A task management application prototype being developed with the goal of replacing the  
+spreadsheet that I currently use. For this prototype I'm using python with the tkinter  
+library package.
 
 ## Tools Used
 
@@ -15,7 +16,7 @@ There is no current documentation for the application.
 ## TODO List
 
 - [x] Develop the basis for the switching tabs
-- [ ] Implement a group add/remove feature
+- [x] Implement a group add/remove feature
 - [ ] Implement a task add/remove feature
 - [ ] Implement a colorscheme feature
 - [ ] Implement a local save feature

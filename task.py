@@ -33,36 +33,41 @@ class Task:
 
     Methods:
     --------------------
-    getIdNum()
+    get_id_num()
         Returns the identification number of the task.
-    getName()
+    get_name()
         Returns the name of the task.
-    getDate()
+    get_date()
         Returns the date that the task needs to be
         completed by.
-    getPriority()
+    get_priority()
         Returns an Enum that represents how important
         the task is.
-    getDescription()
+    get_description()
         Returns the description of the task.
-    setIdNum()
+    get_completion()
+        Returns the completion status of the task.
+    set_id_num()
         Sets the identification number of the task
         to the value given to the method call.
-    setName()
+    set_name()
         Sets the name of the task to the value
         given to the method call.
-    setDate()
+    set_date()
         Sets the date that the task needs to be completed
         by to the value given to the method call.
-    setPriority()
+    set_priority()
         Sets the priority of the task to the value given
         to the method call.
-    setDescription()
+    set_description()
         Sets the description of the task to the value
         given to the method call.
+    set_completion()
+        Sets the completion status of the task to the
+        value given to the method call.
     """
 
-    def __init__(self, id_num, name = "Generic Task", date = "", priority = Priority.LOW):
+    def __init__(self, id_num, name = "Generic Task", date = "N/A", priority = Priority.LOW, complete = False):
         """
         A four-argument constructor for the class that
         requires an identification number to be provided
@@ -76,9 +81,10 @@ class Task:
         self._date = date
         self._priority = priority
         self._description = "No known description."
+        self._complete = complete
 
 
-    def getIdNum(self):
+    def get_id_num(self):
         """
         Returns the identification number of 
         the task.
@@ -87,7 +93,7 @@ class Task:
         return self._id_num
 
 
-    def getName(self):
+    def get_name(self):
         """
         Returns the name of the task.
         """
@@ -95,7 +101,7 @@ class Task:
         return self._name
 
 
-    def getDate(self):
+    def get_date(self):
         """
         Returns the date that the task needs to be
         completed by in the format of MM-DD-YYYY.
@@ -104,7 +110,7 @@ class Task:
         return self._date
 
 
-    def getPriority(self):
+    def get_priority(self):
         """
         Returns the priority of the task as an
         Enum object.
@@ -113,14 +119,23 @@ class Task:
         return self._priority
 
 
-    def getDescription(self):
+    def get_description(self):
         """
         Returns the description of the task.
         """
+        
         return self._description
 
+    
+    def get_completion(self):
+        """
+        Returns the completion status of the task.
+        """
 
-    def setIdNum(self, id_num):
+        return self._complete
+
+
+    def set_id_num(self, id_num):
         """
         Sets the identification number of the task
         to the value given at the method call.
@@ -129,7 +144,7 @@ class Task:
         self._id_num = id_num
 
 
-    def setName(self, name):
+    def set_name(self, name):
         """
         Sets the name of the task to the value
         given at the method call.
@@ -138,7 +153,7 @@ class Task:
         self._name = name
 
 
-    def setDate(self, date):
+    def set_date(self, date):
         """
         Sets the date that the task needs to be completed 
         by to the value given at the method call, but 
@@ -148,7 +163,7 @@ class Task:
         self._date = date
 
 
-    def setPriority(self, priority):
+    def set_priority(self, priority):
         """
         Sets the priority of the task to the value
         given at the method call, requires an Enum
@@ -158,10 +173,38 @@ class Task:
         self._priority = priority
 
 
-    def setDescription(self, description):
+    def set_description(self, description):
         """
         Sets the description of the task to the value
         given at the method call.
         """
         
-        self.description = description
+        self._description = description
+
+
+    def set_completion(self, complete):
+        """
+        Sets the completion status of the task to the
+        value given at the method call.
+        """
+
+        self._complete = complete
+
+
+    def __eq__(self, other):
+        """
+        Defines the equality comparison.
+        """
+
+        if isinstance(other, Task):
+            return self._id_num == other.get_name()
+        return NotImplemented
+
+    
+    def __str__(self):
+        """
+        Defines the toString behaviour of the
+        task object.
+        """
+
+        return f"Task Name: {self._name}\n Task ID: {self._id_num}\n Completed{self._complete}"

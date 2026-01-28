@@ -82,6 +82,7 @@ class Window:
         }
         self.groups = []
         self.active_group_buttons = 0
+        self.active_tasks = 0
         self.create_menu_bar()
         self.create_home_page()
 
@@ -217,6 +218,7 @@ class Window:
         else:
             self.main_frame.destroy()
             self.create_home_page()
+            self.active_group_buttons = 0
 
 
     def create_task_page(self):
@@ -248,10 +250,21 @@ class Window:
         group_button_bar.columnconfigure(0, weight = 1)
         group_button_bar.rowconfigure(0, weight = 1)
         group_button_bar.pack(side = "top", fill = "both", padx = (2, 2), pady = (0, 2))
+
+
+        # Main body of the page
+        body_frame = tk.Frame(self.main_frame)
+        body_frame.pack(side = "bottom", fill = "both", expand = True)
+        task_canvas = tk.Canvas(body_frame, bg = LIGHT_GRAY)
+        task_canvas.pack(side = "left", fill = "both", expand = True)
+        
+        scrollable_frame = tk.Frame(task_canvas, bg = LIGHT_GRAY)
+        scrollable_frame.pack(fill = "both", expand = True)
+
         add_group_button = tk.Button(
             group_button_bar,
             text = "Add Group",
-            command = self.new_group,
+            command = partial(self.new_group, scrollable_frame),
             bg = DARK_GRAY,
             fg = WHITE,
             activebackground = GRAY,
@@ -259,14 +272,7 @@ class Window:
             cursor = "hand2"
         )
         add_group_button.grid(row = 0, column = 0, sticky = tk.NSEW)
-
-        # Main body of the page
-        body_frame = tk.Frame(self.main_frame)
-        body_frame.pack(side = "bottom", fill = "both", expand = True)
-        task_canvas = tk.Canvas(body_frame, bg = LIGHT_GRAY)
-        task_canvas.pack(side = "left", fill = "both", expand = True)
-        self.scrollable_task_frame = tk.Frame(task_canvas, bg = LIGHT_GRAY)
-        self.scrollable_task_frame.pack(fill = "both", expand = True)
+        
         scroll_bar_frame = tk.Frame(body_frame)
         scroll_bar_frame.pack(side = "right", fill = "y")
         scroll_bar = tk.Scrollbar(
@@ -277,7 +283,7 @@ class Window:
         scroll_bar.pack(fill = "both", expand = True)
         canvas_window = task_canvas.create_window(
             (0, 0),
-            window = self.scrollable_task_frame,
+            window = scrollable_frame,
             anchor = "nw"
         )
         task_canvas.bind(
@@ -288,7 +294,7 @@ class Window:
             )
         )
         task_canvas.configure(yscrollcommand = scroll_bar.set)
-        self.scrollable_task_frame.bind(
+        scrollable_frame.bind(
             "<Configure>",
             lambda e: task_canvas.configure(
                 scrollregion = task_canvas.bbox("all")
@@ -296,7 +302,7 @@ class Window:
         )
 
         for grp in self.groups:
-            self.add_group(grp)
+            self.add_group(grp, scrollable_frame)
 
 
     def switch_to_task(self):
@@ -313,7 +319,7 @@ class Window:
             self.create_task_page()
 
 
-    def new_group(self):
+    def new_group(self, scrollable_frame):
         """
         This method handles the logic for creating a
         new group.
@@ -322,7 +328,7 @@ class Window:
         num = len(self.groups)
         grp = Group(f"Group #{num + 1}")
         self.groups.append(grp)
-        self.add_group(grp)
+        self.add_group(grp, scrollable_frame)
 
 
     def delete_group(self, grp):
@@ -334,7 +340,7 @@ class Window:
         self.groups.remove(grp)
         self.switch_to_task()
 
-    def add_group(self, grp):
+    def add_group(self, grp, scrollable_frame):
         """
         This method handles the logic for adding a new group
         display in the task menu.
@@ -343,15 +349,15 @@ class Window:
         index = self.active_group_buttons
         row = index // 3
         col = index % 3
-        w_height = self.scrollable_task_frame.winfo_screenheight()
-        w_width = self.scrollable_task_frame.winfo_screenwidth()
-        self.scrollable_task_frame.columnconfigure(col, weight = 1)
-        self.scrollable_task_frame.rowconfigure(row, weight = 1)
+        w_height = scrollable_frame.winfo_screenheight()
+        w_width = scrollable_frame.winfo_screenwidth()
+        scrollable_frame.columnconfigure(col, weight = 1)
+        scrollable_frame.rowconfigure(row, weight = 1)
         self.active_group_buttons += 1
 
         button = ctk.CTkButton(
-            self.scrollable_task_frame,
-            text = grp.getName(),
+            scrollable_frame,
+            text = grp.get_name(),
             height = w_height // 4,
             width = w_width // 4,
             corner_radius = 8,
@@ -400,6 +406,19 @@ class Window:
         task_button_bar.columnconfigure(1, weight = 1)
         task_button_bar.rowconfigure(0, weight = 1)
         task_button_bar.pack(side = "top", fill = "both", padx = (2, 2), pady = (0, 2))
+
+        # The main body for the page
+        body_frame = tk.Frame(self.main_frame)
+        body_frame.pack(side = "bottom", fill = "both", expand = True)
+
+        task_canvas = tk.Canvas(body_frame, bg = LIGHT_GRAY)
+        task_canvas.pack(side = "left", fill = "both", expand = True)
+        scrollable_frame = tk.Frame(
+            task_canvas,
+            bg = BLACK
+        )
+        scrollable_frame.pack(fill = "both", expand = True)
+
         add_task_button = tk.Button(
             task_button_bar,
             text = "Add Task",
@@ -407,7 +426,8 @@ class Window:
             fg = WHITE,
             activebackground = GRAY,
             activeforeground = WHITE,
-            cursor = "hand2"
+            cursor = "hand2",
+            command = partial(self.new_task, grp)
         )
         add_task_button.grid(row = 0, column = 0, sticky = tk.NSEW)
         delete_group_button = tk.Button(
@@ -422,11 +442,145 @@ class Window:
         )
         delete_group_button.grid(row = 0, column = 1, sticky = tk.NSEW)
 
-        # The main body for the page
-        body_frame = tk.Frame(self.main_frame)
-        body_frame.pack(side = "bottom", fill = "both", expand = True)
-        test_label = tk.Label(body_frame, text = grp.getName())
-        test_label.pack()
+        scroll_bar_frame = tk.Frame(body_frame)
+        scroll_bar_frame.pack(side = "right", fill = "y")
+        scroll_bar = tk.Scrollbar(
+            scroll_bar_frame,
+            orient = "vertical",
+            command = task_canvas.yview
+        )
+        scroll_bar.pack(fill = "both", expand = True)
+        
+        canvas_window = task_canvas.create_window(
+            (0, 0),
+            window = scrollable_frame,
+            anchor = "nw"
+        )
+        task_canvas.bind(
+            "<Configure>",
+            lambda e: task_canvas.itemconfig(
+                canvas_window,
+                width = e.width
+            )
+        )
+        task_canvas.configure(yscrollcommand = scroll_bar.set)
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: task_canvas.configure(
+                scrollregion = task_canvas.bbox("all")
+            )
+        )
+
+        for task in grp.get_tasks():
+            self.load_task(task, grp, scrollable_frame)
+
+
+    def new_task(self, grp):
+        """
+        This method handles the logic for creating
+        a new task object.
+        """
+
+        self.active_tasks += 1
+        index = self.active_tasks
+        task = Task(id_num = index, name = f"Task #{index}")
+        grp.add_task(task)
+        self.active_frames["group"] = False
+        self.switch_to_group(grp)
+
+
+    def load_task(self, task, grp, scrollable_frame):
+        """
+        This method handles the logic for creating a
+        new task within a group page.
+        """
+
+        task_bar = tk.Frame(scrollable_frame, padx = 1, pady = 1)
+        task_bar.columnconfigure(0, weight = 7)
+        task_bar.columnconfigure(1, weight = 2)
+        task_bar.columnconfigure(2, weight = 1)
+        task_bar.columnconfigure(3, weight = 1)
+        task_bar.rowconfigure(0, weight = 1)
+        task_bar.pack(fill = "both", expand = True)
+
+        task_name = tk.Label(
+            task_bar,
+            text = task.get_name(),
+            bg = WHITE,
+            fg = BLACK,
+            bd = 1,
+            relief = "solid"
+        )
+        task_name.grid(
+            row = 0, 
+            column = 0, 
+            sticky = tk.NSEW, 
+            padx = 1, 
+            pady = 1
+        )
+        
+        task_date = tk.Label(
+            task_bar,
+            text = task.get_date(),
+            bg = WHITE,
+            fg = BLACK,
+            bd = 1,
+            relief = "solid"
+        )
+        task_date.grid(
+            row = 0, 
+            column = 1, 
+            sticky = tk.NSEW, 
+            padx = 1, 
+            pady = 1
+        )
+
+        task_completion = tk.Button(
+            task_bar,
+            cursor = "hand2",
+            bg = WHITE,
+            fg = BLACK,
+            bd = 1,
+            relief = "solid",
+            activebackground = GRAY,
+            activeforeground = WHITE
+        )
+        task_completion.grid(
+            row = 0, 
+            column = 2, 
+            sticky = tk.NSEW
+        )
+
+        task_delete = tk.Button(
+            task_bar,
+            text = "Delete Task",
+            cursor = "hand2",
+            bg = WHITE,
+            fg = BLACK,
+            bd = 1,
+            relief = "solid",
+            activebackground = GRAY,
+            activeforeground = WHITE,
+            command = partial(self.remove_task, task, grp)
+        )
+        task_delete.grid(
+            row = 0, 
+            column = 3, 
+            sticky = tk.NSEW, 
+            padx = (0, 1)
+        )
+
+
+    def remove_task(self, task, grp):
+        """
+        This method handles the logic for deleting a task
+        within a group.
+        """
+  
+        grp.remove_task(task)
+        self.active_tasks -= 1
+        self.active_frames["group"] = False
+        self.switch_to_group(grp)
 
 
     def switch_to_group(self, grp):
@@ -482,6 +636,7 @@ class Window:
             self.main_frame.destroy()
             self.create_settings_page()
             self.active_group_buttons = 0
+
 
     def start(self):
         """

@@ -20,30 +20,30 @@ class Group:
         constructed group.
     Methods:
     --------------------
-    addTask()
+    add_task()
         Adds a given task to the _tasks list attribute.
-    removeTask()
+    remove_task()
         Removes a specified task from the _tasks
         list attribute.
-    getName()
+    get_name()
         Returns the name of the group.
-    getColor()
+    get_color()
         Returns the color associated with the group.
-    getDescription()
+    get_description()
         Returns a description of the group.
-    getTasks()
+    get_tasks()
         Returns a list of the tasks associated with
         the group.
-    setName()
+    set_name()
         Sets the name of the group to the value given
         to the method call.
-    setColor()
+    set_color()
         Sets the color of the group to the value given
         to the method call.
-    setDescription()
+    set_description()
         Sets the description of the group to the value
         given to the method call.
-    setTasks()
+    set_tasks()
         Sets the list of tasks associated with the group
         to the value given to the method call.
     copy()
@@ -65,7 +65,7 @@ class Group:
         self._tasks = []
    
 
-    def addTask(self, task):
+    def add_task(self, task):
         """
         Appends a given task to the the end of
         the _tasks list attribute.
@@ -74,7 +74,7 @@ class Group:
         self._tasks.append(task)
 
 
-    def removeTask(self, task_id):
+    def remove_task(self, task):
         """
         Searches the _tasks list attribute for
         a task object that matches the task id
@@ -82,12 +82,11 @@ class Group:
         remove it from the list.
         """
 
-        for task in self._tasks:
-            if task.getIdNum() == task_id:
-                self._tasks.remove(task)
+        if task in self._tasks:
+            self._tasks.remove(task)
 
 
-    def getName(self):
+    def get_name(self):
         """
         Returns the name of the group.
         """
@@ -95,7 +94,7 @@ class Group:
         return self._name
     
 
-    def getColor(self):
+    def get_color(self):
         """
         Returns the color of the group as a
         HEX representation, an example would
@@ -105,7 +104,7 @@ class Group:
         return self._color
     
 
-    def getDescription(self):
+    def get_description(self):
         """
         Returns the description of the group.
         """
@@ -113,7 +112,7 @@ class Group:
         return self._description
     
 
-    def getTasks(self):
+    def get_tasks(self):
         """
         Returns a list of tasks associated with
         the group.
@@ -121,7 +120,7 @@ class Group:
         return self._tasks
 
 
-    def setName(self, name):
+    def set_name(self, name):
         """
         Sets the name of the group to the value
         given at the method call.
@@ -130,7 +129,7 @@ class Group:
         self._name = name
     
 
-    def setColor(self, color):
+    def set_color(self, color):
         """
         Sets the color of the group to the value
         given at the method call, requires a HEX
@@ -141,7 +140,7 @@ class Group:
         self._color = color
     
 
-    def setDescription(self, description):
+    def set_description(self, description):
         """
         Sets the description of the group to the
         value given at the method call.
@@ -150,7 +149,7 @@ class Group:
         self._description = description
 
 
-    def setTasks(self, tasks):
+    def set_tasks(self, tasks):
         """
         Sets the list of tasks associated with the
         group to the value given at the method call.
@@ -165,7 +164,26 @@ class Group:
         that group.
         """
         temp = Group(self._name)
-        temp.setColor(self._color)
-        temp.setDescription(self._description)
-        temp.setTasks(self._tasks)
+        temp.set_color(self._color)
+        temp.set_description(self._description)
+        temp.set_tasks(self._tasks)
         return temp
+
+    
+    def __eq__(self, other):
+        """
+        Defines the equality comparison.
+        """
+
+        if isInstance(other, Group):
+            return self._name == other.get_name()
+        return NotImplemented
+
+
+    def __str__(self):
+        """
+        Defines the toString behavior for the
+        group object.
+        """
+
+        return f"Group Name: {self._name}"

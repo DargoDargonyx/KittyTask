@@ -1,0 +1,102 @@
+[
+  {
+    "file": "src/main.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "src/main.c",
+      "-o",
+      "bin/main.o",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/main.o"
+  },
+  {
+    "file": "src/core/cli.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "src/core/cli.c",
+      "-o",
+      "bin/core/cli.o",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/core/cli.o"
+  },
+  {
+    "file": "src/core/task.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "src/core/task.c",
+      "-o",
+      "bin/core/task.o",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/core/task.o"
+  },
+  {
+    "file": "src/external/cJSON.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "src/external/cJSON.c",
+      "-o",
+      "bin/external/cJSON.o",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/external/cJSON.o"
+  },
+  {
+    "file": "src/util/file.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "src/util/file.c",
+      "-o",
+      "bin/util/file.o",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/util/file.o"
+  }
+]

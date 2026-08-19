@@ -170,4 +170,4 @@ void destroy_task_group_container(void) {
 	task_group_container = NULL;
 }
 
-TaskGroupContainer* get_group_container(void) { return task_group_container; }
+TaskGroupContainer* get_task_group_container(void) { return task_group_container; }

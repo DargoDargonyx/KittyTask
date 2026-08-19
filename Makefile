@@ -10,8 +10,11 @@ LDFLAGS := $(shell sdl2-config --libs) \
            -Wl,-rpath,'$$ORIGIN/lib'
 
 SRC := $(wildcard $(SRC_DIR)/*.c) \
+	   $(wildcard $(SRC_DIR)/cli/*.c) \
 	   $(wildcard $(SRC_DIR)/core/*.c) \
 	   $(wildcard $(SRC_DIR)/external/*.c) \
+	   $(wildcard $(SRC_DIR)/sdl/*.c) \
+	   $(wildcard $(SRC_DIR)/storage/*.c) \
 	   $(wildcard $(SRC_DIR)/util/*.c)
 
 OBJ := $(patsubst $(SRC_DIR)/%.c, $(BIN_DIR)/%.o, $(SRC))

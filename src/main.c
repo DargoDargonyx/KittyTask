@@ -1,15 +1,15 @@
 /**
  * @file main.c
  * @author DargoDargonyx
- * @date 08/17/2026
+ * @date 08/18/2026
  */
 
-#include <stdio.h>
-
-#include "util/helper.h"
+#include "core/task.h"
 
 
-int main() {
-	printf(PRINT_INFO "Project compiled\n");
+int main(int argc, char** argv) {
+	init_task_group_container();	
+
+	destroy_task_group_container();
 	return 0;
 }

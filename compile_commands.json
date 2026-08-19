@@ -20,26 +20,6 @@
     "output": "bin/main.o"
   },
   {
-    "file": "src/core/cli.c",
-    "arguments": [
-      "/usr/bin/gcc",
-      "-c",
-      "src/core/cli.c",
-      "-o",
-      "bin/core/cli.o",
-      "-Wall",
-      "-Wextra",
-      "-Iinclude",
-      "-I/usr/include/SDL2",
-      "-D_GNU_SOURCE=1",
-      "-D_REENTRANT",
-      "-O2",
-      "-DNDEBUG"
-    ],
-    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
-    "output": "bin/core/cli.o"
-  },
-  {
     "file": "src/core/task.c",
     "arguments": [
       "/usr/bin/gcc",

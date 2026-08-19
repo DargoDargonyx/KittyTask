@@ -87,6 +87,8 @@ int task_group_create(const char* title) {
 	TaskGroup task_group;
 	strncpy(task_group.title, title, sizeof(task_group.title) - 1);
     task_group.title[sizeof(task_group.title) - 1] = '\0';
+	task_group.task_count = 0;
+	task_group.next_id = 0;
 
 	task_group.id = task_group_container->next_id++;  
 	if (task_group_container->task_group_count <= MAX_GROUPS) 

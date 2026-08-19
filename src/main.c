@@ -41,5 +41,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+	destroy_task_group_container();
     return result;
 }

@@ -11,30 +11,35 @@
 #include <stdio.h>
 
 
+
 int main(int argc, char** argv) {
-	init_task_group_container();
-	TaskGroupContainer* container = get_task_group_container();
-
-	if (!container) {
-		printf(PRINT_ERROR "Failed to initialize task manager.\n");
+    if (!init_task_group_container()) {
+		printf(PRINT_ERROR "Failed to initialize task group container.\n");
 		return 1;
 	}
 
-	if (file_exists(TASK_DATA_PATH)) {
-		if (!group_container_load(TASK_DATA_PATH)) {
-			printf(PRINT_ERROR "Failed to load %s.\n", TASK_DATA_PATH);
-			return 1;
-		}
-	}
+	if (!storage_init()) {
+        printf(PRINT_ERROR "Failed to initialize storage.\n");
+        return 1;
+    }
 
-	int result;
-	if (argc == 1) result = cli_run();
-	else result = cli_command(argc, argv);
+    if (!storage_load()) {
+        printf(PRINT_ERROR "Failed to load task data.\n");
+        return 1;
+    }
 
-	if (!group_container_save(TASK_DATA_PATH)) {
-		printf(PRINT_ERROR "Failed to save %s.\n", TASK_DATA_PATH);
-		return 1;
-	}
+    int result;
 
-	return result;
+    if (argc == 1) {
+        result = cli_run();
+    } else {
+        result = cli_command(argc, argv);
+    }
+
+    if (!storage_save()) {
+        printf(PRINT_ERROR "Failed to save task data.\n");
+        return 1;
+    }
+
+    return result;
 }

@@ -11,7 +11,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
+
+#define DEV_DATA_DIR  "data"
+#define DEV_DATA_FILE "task_data.json"
+
+#define RELEASE_DATA_DIR_NAME "ktask"
+#define RELEASE_DATA_FILE_NAME "task_data.json"
 
 // Generic
 
@@ -31,7 +41,7 @@ char* read_json(const char* filename) {
     FILE* file = fopen(filename, "rb");
 
     if (!file) {
-        printf(PRINT_ERROR "Could not open file {%s}\n", filename);
+        printf(PRINT_ERROR "Could not open file %s\n", filename);
         return NULL;
     }
 
@@ -72,7 +82,7 @@ int write_json(cJSON* json, const char* filename) {
 	if (json_str == NULL) return 0;
 
 	if (file == NULL) {
-		printf(PRINT_ERROR "Could not write to the file {%s}\n", filename);
+		printf(PRINT_ERROR "Could not write to the file %s\n", filename);
 		free(json_str);
 		return 1;
 	}
@@ -84,176 +94,278 @@ int write_json(cJSON* json, const char* filename) {
 	return 0;
 }
 
+// Storage
+
+static char data_dir[4096];
+static char data_file[4096];
+
+static int create_directory(const char* path) {
+	if (mkdir(path, 0755) == 0) return 1;
+	
+	if (errno == EEXIST) {
+		struct stat st;
+		if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) return 1;
+	}
+	return 0;
+}
+
+static int ensure_directory_recursive(const char* path) {
+	char temp[4096];
+	if (!path || strlen(path) >= sizeof(temp)) return 0;
+
+	snprintf(temp, sizeof(temp), "%s", path);
+	for (char *p = temp + 1; *p != '\0'; p++) {
+		if (*p != '/') continue;
+
+		*p = '\0';
+		if (!create_directory(temp)) return 0;
+		*p = '/';
+	}
+	return create_directory(temp);
+}
+
+#ifdef KTASK_DEV
+static int setup_dev_paths(void) {
+	snprintf(data_dir, sizeof(data_dir), "%s", DEV_DATA_DIR);
+	snprintf(data_file, sizeof(data_file), "%s", DEV_DATA_FILE);
+	return ensure_directory_recursive(data_dir);
+}
+#else
+static int setup_release_paths(void) {
+	const char* home = getenv("HOME");
+
+	if (!home || home[0] == '\0') {
+		printf(PRINT_ERROR "Could not determine HOME directory.\n");
+		return 0;
+	}
+
+	if (snprintf(
+			data_dir, 
+			sizeof(data_dir), 
+			"%s/.local/share/%s", 
+			home, 
+			RELEASE_DATA_DIR_NAME
+		) >= (int) sizeof(data_dir)) {
+
+		printf(PRINT_ERROR "Data directory path is too long.\n");
+		return 0;
+	}
+
+	if (snprintf(
+			data_file,
+			sizeof(data_file),
+			"%s/%s",
+			data_dir,
+			RELEASE_DATA_FILE_NAME
+		) >= (int) sizeof(data_file)) {
+
+		printf(PRINT_ERROR "Data file path is too long.\n");
+		return 0;
+	}
+
+	return ensure_directory_recursive(data_dir);
+}
+#endif
+
+int storage_init(void) {
+#ifdef KTASK_DEV
+	return setup_dev_paths();
+#else
+	return setup_release_paths();
+#endif
+}
+
+const char* storage_get_data_path(void) {
+	if (data_file[0] == '\0') return NULL;
+	return data_file;
+}
+
+int storage_load(void) {
+	const char* filename = storage_get_data_path();
+	if (!filename) return 0;
+	if (!file_exists(filename)) return 1;
+	return group_container_load(filename);
+}
+
+int storage_save(void) {
+	const char* filename = storage_get_data_path();
+	if (!filename) return 0;
+	return group_container_save(filename);
+}
+
+
 // Tasks
 
 cJSON* task_to_json(const Task* task) {
-    if (!task) return NULL;
+	if (!task) return NULL;
 
-    cJSON *json = cJSON_CreateObject();
-    if (!json) return NULL;
+	cJSON* json = cJSON_CreateObject();
+	if (!json) return NULL;
 
-    cJSON_AddNumberToObject(json, "id", task->id);
-    cJSON_AddStringToObject(json, "title", task->title);
-    cJSON_AddStringToObject(json, "description", task->description);
-    cJSON_AddNumberToObject(json, "status", task->status);
-    cJSON_AddNumberToObject(json, "priority", task->priority);
+	cJSON_AddNumberToObject(json, "id", task->id);
+	cJSON_AddStringToObject(json, "title", task->title);
+	cJSON_AddStringToObject(json, "description", task->description);
+	cJSON_AddNumberToObject(json, "status", task->status);
+	cJSON_AddNumberToObject(json, "priority", task->priority);
 
-    return json;
+	return json;
 }
 
 int task_from_json(const cJSON* json, Task* task) {
-    if (!json || !task) return 0;
+	if (!json || !task) return 0;
 
-    const cJSON* id = cJSON_GetObjectItemCaseSensitive(json, "id");
-    const cJSON* title = cJSON_GetObjectItemCaseSensitive(json, "title");
-    const cJSON* description = cJSON_GetObjectItemCaseSensitive(json, "description");
-    const cJSON* status = cJSON_GetObjectItemCaseSensitive(json, "status");
-    const cJSON* priority = cJSON_GetObjectItemCaseSensitive(json, "priority");
+	const cJSON* id = cJSON_GetObjectItemCaseSensitive(json, "id");
+	const cJSON* title = cJSON_GetObjectItemCaseSensitive(json, "title");
+	const cJSON* description = cJSON_GetObjectItemCaseSensitive(json, "description");
+	const cJSON* status = cJSON_GetObjectItemCaseSensitive(json, "status");
+	const cJSON* priority = cJSON_GetObjectItemCaseSensitive(json, "priority");
 
-    if (!cJSON_IsNumber(id) ||
-        !cJSON_IsString(title) ||
-        !cJSON_IsString(description) ||
-        !cJSON_IsNumber(status) ||
-        !cJSON_IsNumber(priority)) {
-        return 0;
-    }
+	if (!cJSON_IsNumber(id) 
+		|| !cJSON_IsString(title) 
+		|| !cJSON_IsString(description) 
+		|| !cJSON_IsNumber(status) 
+		|| !cJSON_IsNumber(priority)) {
+		
+		return 0;
+	}
 
-    task->id = id->valueint;
+	task->id = id->valueint;
 
-    snprintf(task->title, sizeof(task->title), "%s", title->valuestring);
-    snprintf(task->description, sizeof(task->description), "%s", description->valuestring);
+	snprintf(task->title, sizeof(task->title), "%s", title->valuestring);
+	snprintf(task->description, sizeof(task->description), "%s", description->valuestring);
 
-    task->status = status->valueint;
-    task->priority = priority->valueint;
+	task->status = status->valueint;
+	task->priority = priority->valueint;
 
-    return 1;
+	return 1;
 }
 
 // Task groups
 
 cJSON* task_group_to_json(const TaskGroup* group) {
-    if (!group) return NULL;
+	if (!group) return NULL;
 
-    cJSON* json = cJSON_CreateObject();
-    if (!json) return NULL;
+	cJSON* json = cJSON_CreateObject();
+	if (!json) return NULL;
 
-    cJSON_AddNumberToObject(json, "id", group->id);
-    cJSON_AddStringToObject(json, "title", group->title);
+	cJSON_AddNumberToObject(json, "id", group->id);
+	cJSON_AddStringToObject(json, "title", group->title);
 
-    cJSON* tasks = cJSON_CreateArray();
-    if (!tasks) {
-        cJSON_Delete(json);
-        return NULL;
-    }
-    cJSON_AddItemToObject(json, "tasks", tasks);
+	cJSON* tasks = cJSON_CreateArray();
+	if (!tasks) {
+		cJSON_Delete(json);
+		return NULL;
+	}
+	cJSON_AddItemToObject(json, "tasks", tasks);
 
-    for (int i = 0; i < group->task_count; i++) {
-        cJSON* task_json = task_to_json(&group->tasks[i]);
-        if (!task_json) {
-            cJSON_Delete(json);
-            return NULL;
-        }
-        cJSON_AddItemToArray(tasks, task_json);
-    }
+	for (int i = 0; i < group->task_count; i++) {
+		cJSON* task_json = task_to_json(&group->tasks[i]);
+		if (!task_json) {
+			cJSON_Delete(json);
+			return NULL;
+		}
+		cJSON_AddItemToArray(tasks, task_json);
+	}
 
-    return json;
+	return json;
 }
 
 int task_group_from_json(const cJSON* json, TaskGroup* group) {
-    if (json == NULL || group == NULL) return 0;
+	if (!json || !group) return 0;
 
-    const cJSON* id = cJSON_GetObjectItemCaseSensitive(json, "id");
-    const cJSON* title = cJSON_GetObjectItemCaseSensitive(json, "title");
-    const cJSON* tasks = cJSON_GetObjectItemCaseSensitive(json, "tasks");
+	const cJSON* id = cJSON_GetObjectItemCaseSensitive(json, "id");
+	const cJSON* title = cJSON_GetObjectItemCaseSensitive(json, "title");
+	const cJSON* tasks = cJSON_GetObjectItemCaseSensitive(json, "tasks");
 
-    if (!cJSON_IsNumber(id) ||
-        !cJSON_IsString(title) ||
-        !cJSON_IsArray(tasks)) {
-        return 0;
-    }
+	if (!cJSON_IsNumber(id) 
+		|| !cJSON_IsString(title) 
+		|| !cJSON_IsArray(tasks)) {
+		
+		return 0;
+	}
 
-    group->id = id->valueint;
+	group->id = id->valueint;
 
-    snprintf(group->title, sizeof(group->title), "%s", title->valuestring);
+	snprintf(group->title, sizeof(group->title), "%s", title->valuestring);
 
-    int task_count = cJSON_GetArraySize(tasks);
-    group->task_count = 0;
+	int task_count = cJSON_GetArraySize(tasks);
+	group->task_count = 0;
 
-    for (int i = 0; i < task_count; i++) {
-        const cJSON* task_json = cJSON_GetArrayItem(tasks, i);
+	for (int i = 0; i < task_count; i++) {
+		const cJSON* task_json = cJSON_GetArrayItem(tasks, i);
 
-        if (!task_from_json(task_json, &group->tasks[i])) return 0;
-        group->task_count++;
-    }
+		if (!task_from_json(task_json, &group->tasks[i])) return 0;
+		group->task_count++;
+	}
 
-    return 1;
+	return 1;
 }
 
 // Task group container
 
 cJSON* group_container_to_json(void) {
-    TaskGroupContainer* task_group_container = get_task_group_container();
+	TaskGroupContainer* task_group_container = get_task_group_container();
 	if (!task_group_container) return NULL;
 
-    cJSON* json = cJSON_CreateObject();
-    if (!json) return NULL;
+	cJSON* json = cJSON_CreateObject();
+	if (!json) return NULL;
 
-    cJSON_AddNumberToObject(json, "next_id", task_group_container->next_id);
+	cJSON_AddNumberToObject(json, "next_id", task_group_container->next_id);
 
-    cJSON* groups = cJSON_CreateArray();
-    if (!groups) {
-        cJSON_Delete(json);
-        return NULL;
-    }
+	cJSON* groups = cJSON_CreateArray();
+	if (!groups) {
+		cJSON_Delete(json);
+		return NULL;
+	}
 
-    cJSON_AddItemToObject(json, "groups", groups);
-    for (int i = 0; i < task_group_container->task_group_count; i++) {
-        cJSON* group_json = task_group_to_json(&task_group_container->task_groups[i]);
-        if (!group_json) {
-            cJSON_Delete(json);
-            return NULL;
-        }
-        cJSON_AddItemToArray(groups, group_json);
-    }
+	cJSON_AddItemToObject(json, "groups", groups);
+	for (int i = 0; i < task_group_container->task_group_count; i++) {
+		cJSON* group_json = task_group_to_json(&task_group_container->task_groups[i]);
+		if (!group_json) {
+			cJSON_Delete(json);
+			return NULL;
+		}
+		cJSON_AddItemToArray(groups, group_json);
+	}
 
-    return json;
+	return json;
 }
 
 int group_container_from_json(const cJSON* json) {
-    TaskGroupContainer* task_group_container = get_task_group_container();
+	TaskGroupContainer* task_group_container = get_task_group_container();
 	if (!json || !task_group_container) return 0;
 
-    const cJSON* next_id = cJSON_GetObjectItemCaseSensitive(json, "next_id");
-    const cJSON* groups = cJSON_GetObjectItemCaseSensitive(json, "groups");
+	const cJSON* next_id = cJSON_GetObjectItemCaseSensitive(json, "next_id");
+	const cJSON* groups = cJSON_GetObjectItemCaseSensitive(json, "groups");
 
-    if (!cJSON_IsNumber(next_id) || !cJSON_IsArray(groups)) return 0;
+	if (!cJSON_IsNumber(next_id) || !cJSON_IsArray(groups)) return 0;
 
-    int group_count = cJSON_GetArraySize(groups);
-    if (group_count > MAX_GROUPS) return 0;
+	int group_count = cJSON_GetArraySize(groups);
+	if (group_count > MAX_GROUPS) return 0;
 
-    task_group_container->task_group_count = 0;
-    task_group_container->next_id = next_id->valueint;
+	task_group_container->task_group_count = 0;
+	task_group_container->next_id = next_id->valueint;
 
-    for (int i = 0; i < group_count; i++) {
-        const cJSON* group_json = cJSON_GetArrayItem(groups, i);
-        if (!task_group_from_json(group_json, &task_group_container->task_groups[i])) 
+	for (int i = 0; i < group_count; i++) {
+		const cJSON* group_json = cJSON_GetArrayItem(groups, i);
+		if (!task_group_from_json(group_json, &task_group_container->task_groups[i])) 
 			return 0;
-        task_group_container->task_group_count++;
-    }
+		task_group_container->task_group_count++;
+	}
 
-    return 1;
+	return 1;
 }
 
 int group_container_save(const char* filename) {
 	TaskGroupContainer* task_group_container = get_task_group_container();
-    if (!task_group_container || !filename) return 0;
+	if (!task_group_container || !filename) return 0;
 
-    cJSON* json = group_container_to_json();
-    if (json == NULL) return 0;
+	cJSON* json = group_container_to_json();
+	if (!json) return 0;
 
-    int result = write_json(json, filename);
-    cJSON_Delete(json);
-    return result == 0;
+	int result = write_json(json, filename);
+	cJSON_Delete(json);
+	return result == 0;
 }
 
 int group_container_load(const char* filename) {

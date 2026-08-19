@@ -11,12 +11,14 @@
 #include "core/task.h"
 
 
-// Generic
-#define TASK_DATA_PATH "../data/task_data.json"
-
 int file_exists(const char*);
 char* read_json(const char*);
 int write_json(cJSON*, const char*);
+
+//Storage
+int storage_init(void);
+int storage_load(void);
+int storage_save(void);
 
 // Tasks
 cJSON* task_to_json(const Task*);

@@ -10,20 +10,24 @@
 #include <stdio.h>
 #include <string.h>
 
-void cli_run(void) {
+int cli_run(void) {
 	char input[256];
-
 	printf(PRINT_INFO "Kitty Task => Type 'help' for commands.\n");
 
+	int result;
 	while (1) {
 		printf(PRINT_KITTY);
-		if (fgets(input, sizeof(input), stdin) == NULL) break;
+		if (fgets(input, sizeof(input), stdin) == NULL) {
+			result = 1;
+			break;
+		}
 		input[strcspn(input, "\n")] = '\0';
 		
 		if (strcmp(input, "exit") == 0 
 				|| strcmp(input, "quit") == 0
 				|| strcmp(input, "q") == 0) {
 			
+			result = 0;
 			break;
 		}
 
@@ -38,6 +42,8 @@ void cli_run(void) {
 		else if (strcmp(input, "task status") == 0)		cli_set_status();
 		else printf("Unknown command: %s\n", input);
 	}
+
+	return result;
 }
 
 void cli_print_help(void) {

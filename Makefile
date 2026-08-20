@@ -9,7 +9,8 @@ LDFLAGS := $(shell sdl2-config --libs) \
            -lSDL2_ttf \
            -lSDL2_image \
            -lSDL2_mixer \
-           -Wl,-rpath,'$$ORIGIN/lib'
+           -Wl,-rpath,'$$ORIGIN/lib' \
+		   -lm
 
 SRC := $(wildcard $(SRC_DIR)/*.c) \
        $(wildcard $(SRC_DIR)/cli/*.c) \

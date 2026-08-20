@@ -3,10 +3,6 @@
     "file": "src/main.c",
     "arguments": [
       "/usr/bin/gcc",
-      "-c",
-      "src/main.c",
-      "-o",
-      "bin/main.o",
       "-Wall",
       "-Wextra",
       "-Iinclude",
@@ -14,19 +10,19 @@
       "-D_GNU_SOURCE=1",
       "-D_REENTRANT",
       "-O2",
-      "-DNDEBUG"
+      "-DNDEBUG",
+      "-c",
+      "src/main.c",
+      "-o",
+      "bin/release/main.o"
     ],
     "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
-    "output": "bin/main.o"
+    "output": "bin/release/main.o"
   },
   {
     "file": "src/cli/cli.c",
     "arguments": [
       "/usr/bin/gcc",
-      "-c",
-      "src/cli/cli.c",
-      "-o",
-      "bin/cli/cli.o",
       "-Wall",
       "-Wextra",
       "-Iinclude",
@@ -34,19 +30,19 @@
       "-D_GNU_SOURCE=1",
       "-D_REENTRANT",
       "-O2",
-      "-DNDEBUG"
+      "-DNDEBUG",
+      "-c",
+      "src/cli/cli.c",
+      "-o",
+      "bin/release/cli/cli.o"
     ],
     "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
-    "output": "bin/cli/cli.o"
+    "output": "bin/release/cli/cli.o"
   },
   {
     "file": "src/cli/command.c",
     "arguments": [
       "/usr/bin/gcc",
-      "-c",
-      "src/cli/command.c",
-      "-o",
-      "bin/cli/command.o",
       "-Wall",
       "-Wextra",
       "-Iinclude",
@@ -54,19 +50,19 @@
       "-D_GNU_SOURCE=1",
       "-D_REENTRANT",
       "-O2",
-      "-DNDEBUG"
+      "-DNDEBUG",
+      "-c",
+      "src/cli/command.c",
+      "-o",
+      "bin/release/cli/command.o"
     ],
     "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
-    "output": "bin/cli/command.o"
+    "output": "bin/release/cli/command.o"
   },
   {
     "file": "src/core/task.c",
     "arguments": [
       "/usr/bin/gcc",
-      "-c",
-      "src/core/task.c",
-      "-o",
-      "bin/core/task.o",
       "-Wall",
       "-Wextra",
       "-Iinclude",
@@ -74,19 +70,19 @@
       "-D_GNU_SOURCE=1",
       "-D_REENTRANT",
       "-O2",
-      "-DNDEBUG"
+      "-DNDEBUG",
+      "-c",
+      "src/core/task.c",
+      "-o",
+      "bin/release/core/task.o"
     ],
     "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
-    "output": "bin/core/task.o"
+    "output": "bin/release/core/task.o"
   },
   {
     "file": "src/external/cJSON.c",
     "arguments": [
       "/usr/bin/gcc",
-      "-c",
-      "src/external/cJSON.c",
-      "-o",
-      "bin/external/cJSON.o",
       "-Wall",
       "-Wextra",
       "-Iinclude",
@@ -94,19 +90,79 @@
       "-D_GNU_SOURCE=1",
       "-D_REENTRANT",
       "-O2",
-      "-DNDEBUG"
+      "-DNDEBUG",
+      "-c",
+      "src/external/cJSON.c",
+      "-o",
+      "bin/release/external/cJSON.o"
     ],
     "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
-    "output": "bin/external/cJSON.o"
+    "output": "bin/release/external/cJSON.o"
+  },
+  {
+    "file": "src/sdl/render.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG",
+      "-c",
+      "src/sdl/render.c",
+      "-o",
+      "bin/release/sdl/render.o"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/release/sdl/render.o"
+  },
+  {
+    "file": "src/sdl/widget.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG",
+      "-c",
+      "src/sdl/widget.c",
+      "-o",
+      "bin/release/sdl/widget.o"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/release/sdl/widget.o"
+  },
+  {
+    "file": "src/sdl/window.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-O2",
+      "-DNDEBUG",
+      "-c",
+      "src/sdl/window.c",
+      "-o",
+      "bin/release/sdl/window.o"
+    ],
+    "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
+    "output": "bin/release/sdl/window.o"
   },
   {
     "file": "src/storage/file.c",
     "arguments": [
       "/usr/bin/gcc",
-      "-c",
-      "src/storage/file.c",
-      "-o",
-      "bin/storage/file.o",
       "-Wall",
       "-Wextra",
       "-Iinclude",
@@ -114,9 +170,13 @@
       "-D_GNU_SOURCE=1",
       "-D_REENTRANT",
       "-O2",
-      "-DNDEBUG"
+      "-DNDEBUG",
+      "-c",
+      "src/storage/file.c",
+      "-o",
+      "bin/release/storage/file.o"
     ],
     "directory": "/home/dargo/DevWork/KittySeries/KittyTask",
-    "output": "bin/storage/file.o"
+    "output": "bin/release/storage/file.o"
   }
 ]
